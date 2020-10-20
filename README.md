@@ -6,5 +6,5 @@ Written for the _Arduino Uno R3_
 ---
 ### *TODO*: 
 - [ ] Fine tune the countdown interval
-- [ ] Implement EEPROM use for storing settings
+- [X] Implement EEPROM use for storing settings
            
