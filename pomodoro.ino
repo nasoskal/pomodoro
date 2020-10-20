@@ -72,7 +72,7 @@ void setup(){
 
 	isBreakMode = 0;
 	isSilent = 0;
-	interval = 1000;
+	interval = 998; // fine-tune (not reliable)
 	mode = 0;
 
 	// load settings from EEPROM
@@ -110,8 +110,6 @@ void loop(){
 }
 
 void idle(){ // aa 
-	Serial.println(startMinutes);
-	Serial.println(startSeconds);
 	sevseg.setChars("--.--");
 	beep(1);
 
@@ -155,6 +153,7 @@ void idle(){ // aa
 				mils2 += 20;
 
 				if (mils2 > longPress){
+					if (isBreakMode) isBreakMode = 0, flash(0), idle(); // allow to reset when in break
 					set();
 					return;
 				}
