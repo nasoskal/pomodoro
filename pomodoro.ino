@@ -1,6 +1,9 @@
 #include "SevSeg.h"
+#include "EEPROM.h"
 
 SevSeg sevseg;
+
+int addr = 0; // address at internal EEPROM
 
 
 const int buzzerPin = A5;
@@ -31,28 +34,28 @@ volatile boolean actionlock; // used to prevent accidental button hit
 unsigned long interval; // 1 sec accuracy countdown
 
 volatile boolean mode;
-unsigned int startMinutes = 52;
-unsigned int startSeconds = 12;
-unsigned int breakMinutes = 8;
-unsigned int breakSeconds = 10;
+byte startMinutes;
+byte startSeconds;
+byte breakMinutes;
+byte breakSeconds;
 
-unsigned int startMinutes1 = 52;
-unsigned int startSeconds1 = 12; 
-unsigned int breakMinutes1 = 8;
-unsigned int breakSeconds1 = 10;
+byte startMinutes1;
+byte startSeconds1; 
+byte breakMinutes1;
+byte breakSeconds1;
 
-unsigned int startMinutes2 = 0;
-unsigned int startSeconds2 = 4; 
-unsigned int breakMinutes2 = 0;
-unsigned int breakSeconds2 = 2;
+byte startMinutes2;
+byte startSeconds2; 
+byte breakMinutes2;
+byte breakSeconds2;
 
 // used for set()
-unsigned int setMinutes;
-unsigned int setSeconds; 
-unsigned int setBreakMinutes;
-unsigned int setBreakSeconds;
+byte setMinutes;
+byte setSeconds; 
+byte setBreakMinutes;
+byte setBreakSeconds;
 volatile int phase = 1; // 
-volatile int digit[9];
+volatile byte digit[9];
 
 
 
@@ -71,6 +74,19 @@ void setup(){
 	isSilent = 0;
 	interval = 1000;
 	mode = 0;
+
+	// load settings from EEPROM
+	startMinutes1 = EEPROM.read(addr);
+	startSeconds1 = EEPROM.read(addr+1);
+	breakMinutes1 = EEPROM.read(addr+2);
+	breakSeconds1 = EEPROM.read(addr+3);
+
+	startMinutes2 = EEPROM.read(addr+4);
+	startSeconds2 = EEPROM.read(addr+5);
+	breakMinutes2 = EEPROM.read(addr+6);
+	breakSeconds2 = EEPROM.read(addr+7);
+
+	isSilent = EEPROM.read(addr+8);
 
 	byte numDigits = 4;
 	byte digitPins[] = {13, 12, 11, 10};
@@ -94,8 +110,11 @@ void loop(){
 }
 
 void idle(){ // aa 
+	Serial.println(startMinutes);
+	Serial.println(startSeconds);
 	sevseg.setChars("--.--");
 	beep(1);
+
 
 	// RESETING THE TIME
 	if (!isBreakMode) {
@@ -371,12 +390,6 @@ void set(){ // ss
 		actionlock = false; // prevents quick button presses
 		while(millis() - mils < blinkInterval) sevseg.refreshDisplay(), checkButtons(); // during
 
-		Serial.print(setMinutes);
-		Serial.print(".");
-		Serial.println(setSeconds);
-		Serial.print(setBreakMinutes);
-		Serial.print(".");
-		Serial.println(setBreakSeconds);
 		if (phase < 5) snprintf(time, 6, "%02d.%02d", setMinutes, setSeconds);
 		else snprintf(time, 6, "%02d.%02d", setBreakMinutes, setBreakSeconds);
 		
@@ -400,6 +413,17 @@ void checkButtons(){ // used in set
 			mils2 += 20;
 
 			if (mils2 > longPress){
+				// save settings to memory
+				EEPROM.update(addr, startMinutes1);
+				EEPROM.update(addr+1, startSeconds1);
+				EEPROM.update(addr+2, breakMinutes1);
+				EEPROM.update(addr+3, breakSeconds1);
+
+				EEPROM.update(addr+4, startMinutes2);
+				EEPROM.update(addr+5, startSeconds2);
+				EEPROM.update(addr+6, breakMinutes2);
+				EEPROM.update(addr+7, breakSeconds2);
+
 				idle();
 			}
 			
@@ -548,6 +572,8 @@ void changeMode(){
 
 void toggleSilent(){
 	isSilent = !isSilent;
+	EEPROM.update(addr+8, isSilent); // save setting
+
 	if (!isSilent) sevseg.setChars("on"), beep(1);
 	else sevseg.setChars("off");
 	mils = millis();
