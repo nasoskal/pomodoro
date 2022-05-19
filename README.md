@@ -1,10 +1,10 @@
 # pomodoro 
-An Arduino implementation of a pomodoro timer
+**A personal project**
 
-Written for the _Arduino Uno Rev3_
+An Arduino implementation of a [pomodoro](https://en.wikipedia.org/wiki/Pomodoro_Technique "pomodoro") timer, written for the _Arduino Uno Rev3_.
 
 ---
-### *TODO*: 
+### *TODO* : 
 - [X] Fine tune the countdown interval
 - [X] Implement EEPROM use for storing settings
 
